@@ -1,0 +1,82 @@
+{% macro render_book_form(form, is_edit=false) %}
+    <div class="mb-3">
+        {{ form.title.label(class="form-label") }}
+        {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else "")) }}
+        {% for error in form.title.errors %}
+            <div class="invalid-feedback">{{ error }}</div>
+        {% endfor %}
+    </div>
+
+    {% if not is_edit %}
+    <div class="mb-3">
+        {{ form.cover.label(class="form-label") }}
+        {{ form.cover(class="form-control" + (" is-invalid" if form.cover.errors else "")) }}
+        {% for error in form.cover.errors %}
+            <div class="invalid-feedback">{{ error }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            {{ form.author.label(class="form-label") }}
+            {{ form.author(class="form-control" + (" is-invalid" if form.author.errors else "")) }}
+            {% for error in form.author.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        </div>
+        <div class="col-md-6 mb-3">
+            {{ form.publisher.label(class="form-label") }}
+            {{ form.publisher(class="form-control" + (" is-invalid" if form.publisher.errors else "")) }}
+            {% for error in form.publisher.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            {{ form.year.label(class="form-label") }}
+            {{ form.year(class="form-control" + (" is-invalid" if form.year.errors else "")) }}
+            {% for error in form.year.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        </div>
+        <div class="col-md-6 mb-3">
+            {{ form.pages.label(class="form-label") }}
+            {{ form.pages(class="form-control" + (" is-invalid" if form.pages.errors else "")) }}
+            {% for error in form.pages.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="mb-3">
+        {{ form.genres.label(class="form-label") }}
+        {{ form.genres(class="form-select" + (" is-invalid" if form.genres.errors else ""), size=5) }}
+        <div class="form-text">Удерживайте Ctrl (или Cmd на Mac), чтобы выбрать несколько жанров.</div>
+        {% for error in form.genres.errors %}
+            <div class="invalid-feedback">{{ error }}</div>
+        {% endfor %}
+    </div>
+
+    <div class="mb-4">
+        {{ form.description.label(class="form-label") }}
+        {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows=6, id="description-editor") }}
+        {% for error in form.description.errors %}
+            <div class="invalid-feedback">{{ error }}</div>
+        {% endfor %}
+    </div>
+
+    {# EasyMDE — Markdown-редактор с панелью инструментов #}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+    <script>
+        var easyMDE = new EasyMDE({
+            element: document.getElementById('description-editor'),
+            spellChecker: false,
+            placeholder: 'Введите описание книги в формате Markdown...',
+            toolbar: ['bold', 'italic', 'heading', '|', 'quote', 'unordered-list', 'ordered-list', '|', 'preview', 'guide']
+        });
+    </script>
+{% endmacro %}
