@@ -10,19 +10,17 @@
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('index') }}">Библиотека</a>
+            <a class="navbar-brand" href="{{ url_for('index') }}">Электронная библиотека</a>
             <div class="collapse navbar-collapse">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('index') }}">Главная</a>
-                    </li>
                 </ul>
-                <div class="d-flex align-items-center text-white">
+                <div class="d-flex align-items-center text-white gap-2">
                     {% if current_user.is_authenticated %}
-                        <span class="me-3">{{ current_user.last_name }} {{ current_user.first_name }}</span>
+                        <span class="me-2">{{ current_user.last_name }} {{ current_user.first_name }}</span>
                         <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">Выйти</a>
                     {% else %}
-                        <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-sm">Войти</a>
+                        <a href="{{ url_for('register') }}" class="btn btn-outline-light btn-sm">Регистрация</a>
+                        <a href="{{ url_for('login') }}" class="btn btn-light btn-sm">Войти</a>
                     {% endif %}
                 </div>
             </div>
@@ -35,7 +33,7 @@
                 {% for category, message in messages %}
                     <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show" role="alert">
                         {{ message }}
-                        <button type="text" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 {% endfor %}
             {% endif %}

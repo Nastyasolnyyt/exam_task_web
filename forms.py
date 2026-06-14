@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileRequired, FileAllowed
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, IntegerField, SelectMultipleField
-from wtforms.validators import DataRequired, NumberRange
+from wtforms.validators import DataRequired, NumberRange, Optional
 from wtforms import SelectField
 
 # 1. Форма авторизации
@@ -19,25 +19,40 @@ class BookForm(FlaskForm):
     publisher = StringField('Издательство', validators=[DataRequired(message="Это поле обязательно для заполнения")])
     author = StringField('Автор', validators=[DataRequired(message="Это поле обязательно для заполнения")])
     pages = IntegerField('Объём (страниц)', validators=[
-        DataRequired(message="Это поле обязательно для заполнения"), 
+        DataRequired(message="Это поле обязательно для заполнения"),
         NumberRange(min=1, message="Количество страниц должно быть больше 0")
     ])
     genres = SelectMultipleField('Жанры', coerce=int)
     cover = FileField('Обложка', validators=[
-        FileRequired(message="Необходимо загрузить обложку"), 
+        FileRequired(message="Необходимо загрузить обложку"),
         FileAllowed(['jpg', 'png', 'jpeg'], 'Только изображения типов JPG, PNG, JPEG!')
     ])
     submit = SubmitField('Сохранить')
 
-# 3. ВАРИАНТ 3: Форма поиска книг (Убедись, что отступы ровно по 4 пробела)
+# 3. ВАРИАНТ 3: Форма поиска книг
+# ИСПРАВЛЕНИЕ: добавлен Optional() для pages_from и pages_to,
+# иначе WTForms падает с ошибкой при пустых числовых полях
 class BookSearchForm(FlaskForm):
+    class Meta:
+        # Отключаем CSRF для GET-формы поиска
+        csrf = False
+
     title = StringField('Название книги')
     author = StringField('Автор')
     genres = SelectMultipleField('Жанры', coerce=int)
     years = SelectMultipleField('Годы', coerce=int)
-    pages_from = IntegerField('Объём от')
-    pages_to = IntegerField('Объём до')
+    pages_from = IntegerField('Объём от', validators=[Optional()])
+    pages_to   = IntegerField('Объём до', validators=[Optional()])
     submit = SubmitField('Найти')
+
+class RegisterForm(FlaskForm):
+    login = StringField('Логин', validators=[DataRequired(message="Это поле обязательно")])
+    last_name = StringField('Фамилия', validators=[DataRequired(message="Это поле обязательно")])
+    first_name = StringField('Имя', validators=[DataRequired(message="Это поле обязательно")])
+    middle_name = StringField('Отчество (необязательно)')
+    password = PasswordField('Пароль', validators=[DataRequired(message="Это поле обязательно")])
+    password2 = PasswordField('Повторите пароль', validators=[DataRequired(message="Это поле обязательно")])
+    submit = SubmitField('Зарегистрироваться')
 
 class ReviewForm(FlaskForm):
     rating = SelectField('Оценка', coerce=int, choices=[

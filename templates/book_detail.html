@@ -47,7 +47,7 @@
         
         {% if current_user.is_authenticated %}
             {% if not already_reviewed %}
-                <a href="{{ url_for('add_review', book_id=book.id) }}" class="btn btn-light btn-sm">✍️ Написать рецензию</a>
+                <a href="{{ url_for('add_review', book_id=book.id) }}" class="btn btn-light btn-sm">Написать рецензию</a>
             {% else %}
                 <span class="badge bg-success">Вы уже оставили рецензию</span>
             {% endif %}
