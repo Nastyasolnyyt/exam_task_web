@@ -28,6 +28,30 @@ with app.app_context():
         db.session.commit()
         print("Тестовый пользователь 'admin' создан!")
 
+    if not User.query.filter_by(login='moderator').first():
+        moderator_user = User(
+            login='moderator',
+            last_name='Модератор',
+            first_name='Тест',
+            role=moderator_role
+        )
+        moderator_user.set_password('mod123')
+        db.session.add(moderator_user)
+
+    # Тестовый пользователь
+    if not User.query.filter_by(login='user1').first():
+        regular_user = User(
+            login='user1',
+            last_name='Пользователь',
+            first_name='Тест',
+            role=user_role
+        )
+        regular_user.set_password('user123')
+        db.session.add(regular_user)
+
+    db.session.commit()
+    print("Тестовые пользователи созданы!")
+
     # 2. ДОБАВЛЕННЫЙ БЛОК: Проверяем и добавляем жанры по ТЗ
     if not Genre.query.first():
         genres_list = [
