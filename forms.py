@@ -29,9 +29,8 @@ class BookForm(FlaskForm):
     ])
     submit = SubmitField('Сохранить')
 
-# 3. ВАРИАНТ 3: Форма поиска книг
-# ИСПРАВЛЕНИЕ: добавлен Optional() для pages_from и pages_to,
-# иначе WTForms падает с ошибкой при пустых числовых полях
+# 3. Форма поиска книг
+
 class BookSearchForm(FlaskForm):
     class Meta:
         # Отключаем CSRF для GET-формы поиска
@@ -63,5 +62,17 @@ class ReviewForm(FlaskForm):
         (1, '1 – плохо'),
         (0, '0 – ужасно')
     ], default=5)
+    text = TextAreaField('Текст рецензии (Markdown)', validators=[DataRequired(message="Напишите текст рецензии")])
+    submit = SubmitField('Сохранить')
+
+class EditReviewForm(FlaskForm):
+    rating = SelectField('Оценка', coerce=int, choices=[
+        (5, '5 – отлично'),
+        (4, '4 – хорошо'),
+        (3, '3 – удовлетворительно'),
+        (2, '2 – неудовлетворительно'),
+        (1, '1 – плохо'),
+        (0, '0 – ужасно')
+    ])
     text = TextAreaField('Текст рецензии (Markdown)', validators=[DataRequired(message="Напишите текст рецензии")])
     submit = SubmitField('Сохранить')

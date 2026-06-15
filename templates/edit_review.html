@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Редактирование рецензии{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">Редактирование рецензии на книгу «{{ review.book.title }}»</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">Автор рецензии: <strong>{{ review.user.last_name }} {{ review.user.first_name }}</strong></p>
+
+                <form method="POST" novalidate>
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        {{ form.rating.label(class="form-label") }}
+                        {{ form.rating(class="form-select") }}
+                    </div>
+
+                    <div class="mb-4">
+                        {{ form.text.label(class="form-label") }}
+                        {{ form.text(class="form-control", rows=6, id="review-editor") }}
+                        {% for error in form.text.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{{ url_for('book_detail', book_id=review.book_id) }}" class="btn btn-outline-secondary">Отмена</a>
+                        {{ form.submit(class="btn btn-dark") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+<script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+<script>
+    var easyMDE = new EasyMDE({
+        element: document.getElementById('review-editor'),
+        spellChecker: false,
+        toolbar: ['bold', 'italic', '|', 'quote', 'unordered-list', '|', 'preview', 'guide']
+    });
+</script>
+{% endblock %}

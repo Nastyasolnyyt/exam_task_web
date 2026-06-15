@@ -8,7 +8,7 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 
 from config import Config
 from models import db, User, Book, Genre, Cover, Role
-from forms import LoginForm, BookForm, BookSearchForm, RegisterForm
+from forms import LoginForm, BookForm, BookSearchForm, RegisterForm, EditReviewForm
 from forms import ReviewForm
 from models import Review
 
@@ -58,10 +58,8 @@ def create_app():
             return url_for('index') + '?' + urlencode(args, doseq=True)
         return dict(page_url=page_url)
 
-    # ==========================================
     # МАРШРУТЫ
-    # ==========================================
-
+ 
     @app.route('/')
     def index():
         page = request.args.get('page', 1, type=int)
@@ -81,7 +79,7 @@ def create_app():
         if search_form.author.data:
             query = query.filter(Book.author.ilike(f"%{search_form.author.data}%"))
 
-        # ИСПРАВЛЕНИЕ: getlist напрямую из request.args для мультиселектов,
+        # getlist напрямую из request.args для мультиселектов,
         # чтобы пагинация не теряла выбранные значения
         selected_genres = request.args.getlist('genres', type=int)
         if selected_genres:
@@ -96,7 +94,7 @@ def create_app():
         if search_form.pages_to.data is not None:
             query = query.filter(Book.pages <= search_form.pages_to.data)
 
-        # ИСПРАВЛЕНИЕ: сортировка по году выхода (сначала новые), как требует ТЗ
+        # сортировка по году выхода (сначала новые), как требует ТЗ
         query = query.order_by(Book.year.desc())
 
         pagination = query.paginate(page=page, per_page=10)
@@ -180,7 +178,7 @@ def create_app():
 
         if form.validate_on_submit():
             try:
-                # ИСПРАВЛЕНИЕ: сначала рендерим Markdown, потом чистим Bleach
+                # сначала рендерим Markdown, потом чистим Bleach
                 clean_description = sanitize_markdown(form.description.data)
 
                 new_book = Book(
@@ -218,7 +216,7 @@ def create_app():
                 db.session.commit()
 
                 flash('Книга успешно добавлена!', 'success')
-                # ИСПРАВЛЕНИЕ: редирект на страницу просмотра книги, как требует ТЗ
+                # редирект на страницу просмотра книги, как требует ТЗ
                 return redirect(url_for('book_detail', book_id=new_book.id))
 
             except Exception as e:
@@ -233,13 +231,13 @@ def create_app():
         book = Book.query.get_or_404(book_id)
 
         # Описание уже хранится как очищенный HTML (после sanitize_markdown),
-        # поэтому просто подставляем его без повторного рендеринга
+        # подставляем его без повторного рендеринга
         book_description_html = book.description
 
         reviews = Review.query.filter_by(book_id=book.id).order_by(Review.created_at.desc()).all()
 
         for r in reviews:
-            # Тексты рецензий тоже хранятся как HTML после sanitize_markdown
+            # Тексты рецензий хранятся как HTML после sanitize_markdown
             r.text_html = r.text
 
         already_reviewed = False
@@ -265,7 +263,7 @@ def create_app():
         form = ReviewForm()
         if form.validate_on_submit():
             try:
-                # ИСПРАВЛЕНИЕ: применяем sanitize_markdown к тексту рецензии
+                # применяем sanitize_markdown к тексту рецензии
                 clean_text = sanitize_markdown(form.text.data)
                 review = Review(
                     book_id=book.id,
@@ -306,7 +304,7 @@ def create_app():
                 book.publisher = form.publisher.data
                 book.year = form.year.data
                 book.pages = form.pages.data
-                # ИСПРАВЛЕНИЕ: применяем sanitize_markdown и при редактировании
+                # применяем sanitize_markdown и при редактировании
                 book.description = sanitize_markdown(form.description.data)
 
                 if form.genres.data:
@@ -316,7 +314,7 @@ def create_app():
 
                 db.session.commit()
                 flash('Данные книги успешно обновлены.', 'success')
-                # ИСПРАВЛЕНИЕ: редирект на страницу просмотра книги
+                # редирект на страницу просмотра книги
                 return redirect(url_for('book_detail', book_id=book.id))
             except Exception as e:
                 db.session.rollback()
@@ -352,12 +350,52 @@ def create_app():
 
         return redirect(url_for('index'))
 
+
+    @app.route('/review/<int:review_id>/edit', methods=['GET', 'POST'])
+    @login_required
+    def edit_review(review_id):
+        if current_user.role.name not in ['Администратор', 'Модератор']:
+            flash('У вас недостаточно прав для выполнения данного действия.', 'danger')
+            return redirect(url_for('index'))
+
+        review = Review.query.get_or_404(review_id)
+        form = EditReviewForm(obj=review)
+
+        if form.validate_on_submit():
+            try:
+                review.rating = form.rating.data
+                review.text = sanitize_markdown(form.text.data)
+                db.session.commit()
+                flash('Рецензия успешно обновлена.', 'success')
+                return redirect(url_for('book_detail', book_id=review.book_id))
+            except Exception as e:
+                db.session.rollback()
+                flash('Не удалось сохранить рецензию.', 'danger')
+
+        return render_template('edit_review.html', form=form, review=review)
+
+    @app.route('/review/<int:review_id>/delete', methods=['POST'])
+    @login_required
+    def delete_review(review_id):
+        if current_user.role.name not in ['Администратор', 'Модератор']:
+            flash('У вас недостаточно прав для выполнения данного действия.', 'danger')
+            return redirect(url_for('index'))
+
+        review = Review.query.get_or_404(review_id)
+        book_id = review.book_id
+        try:
+            db.session.delete(review)
+            db.session.commit()
+            flash('Рецензия успешно удалена.', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash('Не удалось удалить рецензию.', 'danger')
+
+        return redirect(url_for('book_detail', book_id=book_id))
+
     return app
 
 app = create_app()
-
-with app.app_context():
-    db.create_all()
 
 if __name__ == '__main__':
     app.run(debug=True)
